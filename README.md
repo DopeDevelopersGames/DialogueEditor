@@ -5,7 +5,7 @@ You paste or type a script, the page checks it for mistakes, and you can preview
 
 ## Quick start
 
-1. Open `dialogue-editor.html` in a browser (double-click it). No install, no internet needed.
+1. Open `dialogue-editor.html` in a browser (double-click it), or use the hosted copy at https://dopedevelopersgames.github.io/DialogueEditor/. No install needed.
 2. Write a script in the left pane, or press **Load example** to see one.
 3. Fix anything listed in the **Issues** tab, then press **Play scene** to preview it.
 4. Press **Download .txt** and put the file in the game at `Assets/Resources/Dialogue/`.
@@ -47,6 +47,8 @@ The full rules are in the game project's `Docs/dialogue-system-spec.md`. That do
 
 ```
 dialogue-editor.html   the page: layout, styling, buttons, preview stage, saving to the browser
+index.html             forwards GitHub Pages' root URL to dialogue-editor.html
+.nojekyll              tells GitHub Pages to serve files as-is
 dialogue-core.js       the logic: parser, validator, converter. No page code, so it can be tested
 tests/                 automated tests (Node's built-in test runner)
   converter.test.js    "this pasted text must become this script" cases
@@ -99,6 +101,7 @@ Newest first. Add an entry for every change: what changed, and why.
 
 | Date | Tag | Change | Why |
 |---|---|---|---|
+| 2026-11-04 | | `index.html` redirect and `.nojekyll` | GitHub Pages showed the README instead of the editor |
 | 2026-10-27 | `savepoint-piece3` | Open / Download `.txt`; quoted speech no longer keeps a trailing comma | Avoid copy-paste; `"Move," he said.` gave `Move,` |
 | 2026-10-27 | `savepoint-piece2` | Import dialog shows a live preview and a notes list | Writers can review guesses before replacing their script |
 | 2026-10-27 | `savepoint-piece1` | Converter reports lines it had to guess | Silent guesses hide mistakes |
