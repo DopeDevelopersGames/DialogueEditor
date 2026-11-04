@@ -617,6 +617,7 @@ button:disabled:hover { background: var(--surface2); border-color: var(--line); 
           <button data-wrap="wave">wave</button>
           <button data-wrap="wobble">wobble</button>
           <button data-wrap="jump">jump</button>
+          <button data-wrap="impact" title="A hit: shakes hard as the text lands, then settles (inserts [impact=3])">impact</button>
         </div>
         <div class="group">
           <span class="grouplabel">Timing</span>
@@ -1059,7 +1060,8 @@ $("tab-syntax").innerHTML = `
   <tr><td>[shake]…[/shake]</td><td>Jitter. <code>[shake=2.5]</code> for more.</td></tr>
   <tr><td>[wave]…[/wave]</td><td>A sine that travels along the line.</td></tr>
   <tr><td>[wobble]…[/wobble]</td><td>Each letter rotates about its own centre.</td></tr>
-  <tr><td>[jump]…[/jump]</td><td>Letters hop on a stagger.</td></tr></table>
+  <tr><td>[jump]…[/jump]</td><td>Letters hop on a stagger.</td></tr>
+  <tr><td>[impact=3]…[/impact]</td><td>A hit. The stretch shakes as one piece, at that intensity, the moment its first letter appears, then eases back to still over 0.3s. Same scale as <code>[shake]</code>.</td></tr></table>
 
   <h4>Timing</h4><table>
   <tr><td>[pause=0.4]</td><td>Stops the reveal for that long, right there. No closing tag.</td></tr>
@@ -1174,7 +1176,7 @@ $("btn-colcopy").addEventListener("click", async () => {
 const stage = {
   playing: false, node: 0, line: 0, revealed: 0, acc: 0,
   pauseLeft: 0, pauseAt: 0, tags: new Set(), waiting: false,
-  timeLeft: 0, timeTotal: 0, cur: null, last: 0, sides: { Left: null, Right: null },
+  timeLeft: 0, timeTotal: 0, cur: null, hits: [], last: 0, sides: { Left: null, Right: null },
   from: null      // where Restart goes back to: null for the top, else a locateLine result
 };
 
@@ -1227,6 +1229,7 @@ function enterNode(i, hops, at) {
 
 function showLine(l) {
   stage.cur = l; stage.revealed = 0; stage.acc = 0; stage.pauseLeft = 0; stage.pauseAt = 0;
+  stage.hits = [];      // per effect: when an [impact] landed (its first letter appeared)
   const side = sideOf(l.who), other = side === "Left" ? "Right" : "Left";
   stage.sides[side] = l.who;
 
@@ -1368,6 +1371,8 @@ function noise(a, b) {
 
 // Typewriter speed at [speed=1]. Keep in step with the Unity text reveal.
 const CHARS_PER_SECOND = 45;
+// How long an [impact] takes to settle. Keep in step with the Unity animator and the Syntax tab.
+const IMPACT_SECONDS = 0.3;
 
 let effectsOn = true;
 function frame(now) {
@@ -1422,18 +1427,29 @@ function animateChars(time) {
   if (!t.effects.length) return;
   const chs = $("textbox").querySelectorAll(".ch");
   const step = Math.floor(time / 0.05);
+  t.effects.forEach((s, n) => {
+    if (s.kind === "impact" && stage.hits[n] === undefined && stage.revealed > s.first) stage.hits[n] = time;
+  });
 
   for (let i = 0; i < chs.length && i < stage.revealed; i++) {
     let x = 0, y = 0, rot = 0, any = false;
     if (effectsOn) {
-      for (const s of t.effects) {
-        if (i < s.first || i > s.last) continue;
+      t.effects.forEach((s, n) => {
+        if (i < s.first || i > s.last) return;
         any = true;
         if (s.kind === "shake") { x += noise(i, step) * 2.2 * s.amp; y += noise(i, step + 8191) * 2.2 * s.amp; }
         else if (s.kind === "wave") y += Math.sin(time * 3.5 + i * 0.35) * 3 * s.amp;
         else if (s.kind === "wobble") rot += Math.sin(time * 3 + i * 0.5) * 8 * s.amp;
         else if (s.kind === "jump") y += Math.max(0, Math.sin(time * 2.5 + i * 0.6)) * 4 * s.amp;
-      }
+        else if (s.kind === "impact") {
+          // Shake strength at the moment of the hit, lerped down to nothing over IMPACT_SECONDS.
+          // The noise is keyed by the stretch (its first letter), not the letter, so the whole
+          // tagged stretch moves as one rigid shape. It shares one clock too, so letters still
+          // typing in join a settling shake.
+          const k = 1 - Math.min(1, (time - stage.hits[n]) / IMPACT_SECONDS);
+          x += noise(s.first, step) * 2.2 * s.amp * k; y += noise(s.first, step + 8191) * 2.2 * s.amp * k;
+        }
+      });
     } else {
       any = t.effects.some((s) => i >= s.first && i <= s.last);
     }
@@ -1597,6 +1613,7 @@ document.querySelectorAll("[data-wrap]").forEach((b) =>
     const k = b.dataset.wrap;
     if (k === "color") insertColour();   // uses whatever the Colour tab currently holds
     else if (k === "speed") wrapSelection("[speed=0.6]", "[/speed]");
+    else if (k === "impact") wrapSelection("[impact=3]", "[/impact]");
     else wrapSelection(`[${k}]`, `[/${k}]`);
   }));
 document.querySelectorAll("[data-tmp]").forEach((b) =>

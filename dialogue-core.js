@@ -12,7 +12,7 @@
   /** Escapes text so it is safe to place inside innerHTML. */
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  const FX = ["shake", "wave", "wobble", "jump"];
+  const FX = ["shake", "wave", "wobble", "jump", "impact"];
   const TIMING = ["speed", "pause"];
   const KNOWN_FX = FX.concat(TIMING);
   const PERKS = ["Scattershot", "Fly", "NineLives", "Syncopation"];

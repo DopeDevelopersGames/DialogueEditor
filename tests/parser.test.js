@@ -58,6 +58,13 @@ test("effect amplitude and speed multiplier are read", () => {
   assert.deepEqual(r.speeds, [{ mul: 0.5, first: 2, last: 3 }]);
 });
 
+test("impact is a motion effect whose value is its starting intensity", () => {
+  const warns = [];
+  const r = parseEffects("[impact=3]BANG[/impact]", warns, 1);
+  assert.deepEqual(warns, []);
+  assert.deepEqual(r.effects, [{ kind: "impact", amp: 3, first: 0, last: 3 }]);
+});
+
 test("an unclosed effect is closed at the end of the line, with a warning", () => {
   const warns = [];
   const r = parseEffects("[shake]ab", warns, 7);
