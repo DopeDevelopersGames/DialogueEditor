@@ -1,0 +1,27 @@
+// The first meeting. Sets `met_sheriff`, which a rematch file can read.
+//
+// A two-hander: SHERIFF holds the right side and {PLAYER} the left, so both
+// portraits are exercised and the dimming reads.
+
+# opening
+MENTOR: Alright, let's go over the basic again.
+{PLAYER}: Again? We've been through this a thousand time...
+MENTOR: Practice makes perfect.
+{PLAYER}: Maybe for you, I already beat you twice, you really want to go down that road again?
+MENTOR: Won't happen again this time.
+{PLAYER}: If you insist.
+MENTOR: First, revision, what's the number one rule?
+{PLAYER}: You do not shoot during the [jump]first 10 steps[/jump] Do we really have to go through the theory too?
+MENTOR: You shot me on the 9th step <b>that one time</b>
+> "I MISCOUNTED!"                               -> tutorial
+> "Yeah, sorry about that"(feel sorry)       -> tutorial
+> "Yeah, sorry about that"(does not feel sorry)       -> tutorial
+
+#tutorial
+MENTOR: Forget it, what do we do during the first 10 steps?
+{PLAYER}: We focus on each step, [jump]<color=#d9a441>the more we focus, the more accurate we shoot</color>[/jump] <color=#e8d9a0>(W to focus)</color>
+MENTOR: Then?
+{PLAYER}: Load the gun. (R to reload)
+MENTOR: Then?
+{PLAYER}: On the 10th step, it's either winning or dying.
+-> END

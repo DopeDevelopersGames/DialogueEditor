@@ -1,0 +1,42 @@
+// The first meeting. Sets `met_sheriff`, which a rematch file can read.
+//
+// A two-hander: SHERIFF holds the right side and {PLAYER} the left, so both
+// portraits are exercised and the dimming reads.
+
+# opening
+SHERIFF: You picked the <color=#c81e1e>wrong town</color>, stranger.
+{PLAYER}: I've heard that one before.
+SHERIFF: Ten paces.[pause=0.4] [shake]You know how this goes.[/shake]
+
+# threat
+@timer 4 -> back_down
+SHERIFF: Well?[pause=0.5] Say something.
+> "Just passing through."                 -> passing
+> "You talk a lot for a dead man."        -> insult
+> [met_sheriff] "We've met before."       -> callback
+> [!cocky] Say nothing.                   -> back_down
+
+# insult
+@tag cocky
+@perk Scattershot
+{PLAYER}: You talk a lot for a dead man.
+SHERIFF: [wobble=1.4]...Ten paces. Now.[/wobble]
+-> END
+
+# passing
+@tag polite
+@tag met_sheriff
+{PLAYER}: Just passing through.
+SHERIFF: Nobody's just passing. Not here.
+SHERIFF: [speed=0.6]Not any more.[/speed]
+-> END
+
+# callback
+@tag met_sheriff
+{PLAYER}: We've met before.
+SHERIFF: [wave]So we have.[/wave] Didn't finish it then either.
+-> END
+
+# back_down
+@tag met_sheriff
+SHERIFF: [jump]Thought so.[/jump]

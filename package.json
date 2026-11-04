@@ -1,0 +1,8 @@
+{
+  "name": "unity-dialogue-tool",
+  "private": true,
+  "description": "Ten Paces Dialogue Desk: browser tool for writing Unity dialogue scripts.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

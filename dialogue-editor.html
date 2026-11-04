@@ -1,0 +1,1674 @@
+<title>Ten Paces Dialogue Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Passion+One:wght@400;700&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ------------------------------------------------------------------ tokens */
+:root {
+  --bg:       #E8E6E0;
+  --surface:  #F4F2ED;
+  --surface2: #DEDBD3;
+  --line:     #C9C5BA;
+  --ink:      #1A1C21;
+  --muted:    #6B6E75;
+  --faint:    #92959C;
+
+  --brass:    #8A6A28;
+  --brass-dim:#B4913F;
+  --brass-soft: rgba(138,106,40,.13);
+
+  --err:  #A32B1C;
+  --warn: #8A6414;
+  --ok:   #3F6B3A;
+  --err-soft:  rgba(163,43,28,.11);
+  --warn-soft: rgba(138,100,20,.12);
+  --ok-soft:   rgba(63,107,58,.12);
+
+  --tok-node:    #8A6A28;
+  --tok-speaker: #1F4E63;
+  --tok-choice:  #6A3D8A;
+  --tok-dir:     #8A6414;
+  --tok-jump:    #3F6B3A;
+  --tok-fx:      #A32B1C;
+  --tok-tmp:     #4A6A80;
+
+  --shadow: 0 1px 2px rgba(26,28,33,.07), 0 6px 20px rgba(26,28,33,.06);
+  --radius: 3px;
+}
+:root:not([data-theme="light"]) {
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:       #15171C;
+    --surface:  #1D2027;
+    --surface2: #262A33;
+    --line:     #343945;
+    --ink:      #E5E2DA;
+    --muted:    #888B93;
+    --faint:    #676B74;
+
+    --brass:    #D4A94F;
+    --brass-dim:#8A7038;
+    --brass-soft: rgba(212,169,79,.14);
+
+    --err:  #E06A54;
+    --warn: #D9A441;
+    --ok:   #7FB069;
+    --err-soft:  rgba(224,106,84,.13);
+    --warn-soft: rgba(217,164,65,.13);
+    --ok-soft:   rgba(127,176,105,.13);
+
+    --tok-node:    #D4A94F;
+    --tok-speaker: #79B8D1;
+    --tok-choice:  #B98BD9;
+    --tok-dir:     #D9A441;
+    --tok-jump:    #7FB069;
+    --tok-fx:      #E06A54;
+    --tok-tmp:     #6E8DA0;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 22px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:       #15171C;
+  --surface:  #1D2027;
+  --surface2: #262A33;
+  --line:     #343945;
+  --ink:      #E5E2DA;
+  --muted:    #888B93;
+  --faint:    #676B74;
+
+  --brass:    #D4A94F;
+  --brass-dim:#8A7038;
+  --brass-soft: rgba(212,169,79,.14);
+
+  --err:  #E06A54;
+  --warn: #D9A441;
+  --ok:   #7FB069;
+  --err-soft:  rgba(224,106,84,.13);
+  --warn-soft: rgba(217,164,65,.13);
+  --ok-soft:   rgba(127,176,105,.13);
+
+  --tok-node:    #D4A94F;
+  --tok-speaker: #79B8D1;
+  --tok-choice:  #B98BD9;
+  --tok-dir:     #D9A441;
+  --tok-jump:    #7FB069;
+  --tok-fx:      #E06A54;
+  --tok-tmp:     #6E8DA0;
+
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 22px rgba(0,0,0,.3);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Barlow, "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------------ shell */
+.app { display: flex; flex-direction: column; height: 100vh; min-height: 0; }
+
+.topbar {
+  display: flex; align-items: center; gap: 18px;
+  padding: 10px 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: baseline; gap: 9px; margin-right: 2px; }
+.brand b {
+  font-family: "Passion One", Barlow, sans-serif;
+  font-weight: 700; font-size: 27px; letter-spacing: .5px;
+  color: var(--ink); line-height: 1;
+}
+.brand span {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.4px;
+  color: var(--brass); font-weight: 600;
+}
+
+.fileid { display: flex; align-items: center; gap: 7px; }
+.fileid label { font-size: 11px; text-transform: uppercase; letter-spacing: .9px; color: var(--muted); font-weight: 600; }
+.fileid input {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px; padding: 5px 9px; width: 168px;
+  background: var(--bg); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.fileid .ext { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--faint); }
+
+.spacer { flex: 1 1 auto; }
+
+button {
+  font-family: Barlow, sans-serif; font-size: 13px; font-weight: 600;
+  padding: 6px 13px;
+  background: var(--surface2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  cursor: pointer; transition: background .12s, border-color .12s;
+}
+button:hover { background: var(--brass-soft); border-color: var(--brass-dim); }
+button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+button.primary { background: var(--brass); border-color: var(--brass); color: var(--surface); }
+:root[data-theme="dark"] button.primary,
+:root:not([data-theme="light"]) button.primary { color: #14161B; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) button.primary { color: #F4F2ED; } }
+button.primary:hover { filter: brightness(1.08); }
+button.ghost { background: transparent; }
+
+/* ------------------------------------------------------------------ main */
+.main {
+  flex: 1 1 auto; min-height: 0;
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 1px; background: var(--line);
+}
+.pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--bg); }
+
+.panehead {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 14px; background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.3px;
+  font-weight: 700; color: var(--muted);
+  flex: 0 0 auto; flex-wrap: wrap;
+}
+.panehead .count {
+  font-family: "IBM Plex Mono", monospace; letter-spacing: 0;
+  font-size: 11px; color: var(--faint); text-transform: none;
+}
+
+/* ------------------------------------------------------------------ toolbar */
+.toolbar {
+  display: flex; gap: 6px 16px; flex-wrap: wrap;
+  padding: 8px 12px; background: var(--surface);
+  border-bottom: 1px solid var(--line); flex: 0 0 auto;
+}
+/* A group never splits across rows — a "Colour" label stranded at the end of one line with its
+   button at the start of the next reads as two separate controls. */
+.toolbar .group { display: flex; gap: 5px; align-items: center; flex-wrap: nowrap; }
+.toolbar button { padding: 4px 9px; font-size: 12px; white-space: nowrap; }
+#btn-undo, #btn-redo { font-size: 15px; line-height: 1; padding: 3px 10px; }
+button:disabled { opacity: .35; cursor: default; }
+button:disabled:hover { background: var(--surface2); border-color: var(--line); }
+.toolbar .grouplabel {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--faint); font-weight: 700; white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ editor */
+.editorwrap { position: relative; flex: 1 1 auto; min-height: 0; display: flex; overflow: hidden; }
+.gutter {
+  flex: 0 0 auto; padding: 14px 8px 14px 14px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13.5px; line-height: 1.62;
+  color: var(--faint); text-align: right; user-select: none;
+  background: var(--surface); border-right: 1px solid var(--line);
+  overflow: hidden; font-variant-numeric: tabular-nums;
+}
+.gutter div.bad { color: var(--err); font-weight: 600; }
+.gutter div.warnline { color: var(--warn); font-weight: 600; }
+
+.codebox { position: relative; flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.code-shared {
+  margin: 0; padding: 14px 16px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13.5px; line-height: 1.62;
+  white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word;
+  border: 0; tab-size: 4;
+}
+#highlight {
+  position: absolute; inset: 0; overflow: auto;
+  pointer-events: none; color: var(--ink); background: var(--bg);
+}
+#source {
+  position: absolute; inset: 0; overflow: auto; resize: none;
+  color: transparent; background: transparent;
+  caret-color: var(--brass); outline: none;
+}
+#source::selection { background: var(--brass-soft); }
+
+.t-comment { color: var(--faint); font-style: italic; }
+.t-node    { color: var(--tok-node); font-weight: 600; }
+.t-speaker { color: var(--tok-speaker); font-weight: 600; }
+.t-choice  { color: var(--tok-choice); font-weight: 600; }
+.t-dir     { color: var(--tok-dir); font-weight: 600; }
+.t-jump    { color: var(--tok-jump); font-weight: 600; }
+.t-fx      { color: var(--tok-fx); }
+.t-tmp     { color: var(--tok-tmp); }
+.t-gate    { color: var(--tok-dir); font-weight: 600; }
+
+/* ------------------------------------------------------------------ stage */
+.stage { flex: 0 0 auto; border-bottom: 1px solid var(--line); background: var(--surface); }
+.stageboard {
+  position: relative; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.portraits { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.portrait {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg); padding: 12px 14px;
+  min-height: 66px; display: flex; flex-direction: column; justify-content: flex-end;
+  transition: opacity .13s, filter .13s, transform .13s;
+}
+.portrait.absent { opacity: .22; border-style: dashed; }
+.portrait.inactive { opacity: .55; filter: saturate(.45) brightness(.9); }
+.portrait.active { transform: translateY(-3px); border-color: var(--brass-dim); }
+.portrait .who {
+  font-family: "Passion One", Barlow, sans-serif; font-size: 22px; line-height: 1.1;
+  letter-spacing: .3px;
+}
+.portrait .sidetag {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--faint); font-weight: 700; margin-bottom: 3px;
+}
+
+.textbox {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg); padding: 15px 17px; min-height: 92px;
+  font-size: 17px; line-height: 1.65;
+}
+.textbox { overflow-wrap: break-word; }
+.textbox .ch { display: inline-block; white-space: pre; will-change: transform; }
+.textbox .ch.sp { display: inline; will-change: auto; }
+.textbox .hidden { visibility: hidden; }
+.textbox .empty { color: var(--faint); font-style: italic; font-size: 14px; }
+
+.timerrail { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.timerfill { height: 100%; background: var(--err); width: 100%; }
+
+.picks { display: flex; flex-direction: column; gap: 6px; }
+.pick {
+  text-align: left; font-size: 14.5px; padding: 8px 12px;
+  background: var(--bg); border: 1px solid var(--line);
+}
+.pick:hover { background: var(--brass-soft); }
+.pick .gatemark {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px;
+  color: var(--brass); margin-right: 7px;
+}
+
+.tagstrip {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  padding: 9px 16px; border-top: 1px solid var(--line); background: var(--bg);
+  min-height: 38px;
+}
+.tagstrip .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1.1px; color: var(--faint); font-weight: 700; }
+.chip {
+  font-family: "IBM Plex Mono", monospace; font-size: 11.5px;
+  padding: 2px 8px; border-radius: 99px;
+  background: var(--ok-soft); color: var(--ok); border: 1px solid transparent;
+}
+.chip.seen { background: var(--brass-soft); color: var(--brass); }
+.chip.none { background: transparent; color: var(--faint); border-color: var(--line); }
+
+/* ------------------------------------------------------------------ desk */
+.desk { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.tabs { display: flex; gap: 0; background: var(--surface); border-bottom: 1px solid var(--line); flex: 0 0 auto; }
+.tab {
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+  background: transparent; padding: 9px 15px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700;
+  color: var(--muted);
+}
+.tab:hover { background: var(--brass-soft); border-bottom-color: transparent; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--brass); background: transparent; }
+.tab .badge {
+  font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0;
+  padding: 1px 6px; border-radius: 99px; margin-left: 6px;
+  background: var(--surface2); color: var(--muted);
+}
+.tab .badge.err { background: var(--err-soft); color: var(--err); }
+.tab .badge.warn { background: var(--warn-soft); color: var(--warn); }
+
+.tabbody { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px 14px; }
+.tabbody[hidden] { display: none; }
+
+.issue {
+  display: grid; grid-template-columns: auto 1fr; gap: 10px;
+  padding: 8px 10px; margin-bottom: 5px; width: 100%; text-align: left;
+  border: 1px solid var(--line); border-left-width: 3px; background: var(--surface);
+  font-size: 13.5px; line-height: 1.45;
+}
+.issue:hover { background: var(--surface2); border-color: var(--line); }
+.issue.sev-err  { border-left-color: var(--err); }
+.issue.sev-warn { border-left-color: var(--warn); }
+.issue .where {
+  font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600;
+  color: var(--faint); padding-top: 2px; font-variant-numeric: tabular-nums;
+}
+.issue.sev-err .where { color: var(--err); }
+.issue.sev-warn .where { color: var(--warn); }
+.issue code {
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px;
+  background: var(--surface2); padding: 0 4px; border-radius: 2px;
+}
+
+.allclear {
+  display: flex; align-items: center; gap: 9px;
+  padding: 12px 13px; background: var(--ok-soft);
+  border: 1px solid transparent; border-left: 3px solid var(--ok);
+  color: var(--ok); font-weight: 600; font-size: 14px;
+}
+
+.nodecard {
+  border: 1px solid var(--line); background: var(--surface);
+  padding: 9px 11px; margin-bottom: 6px; width: 100%; text-align: left;
+  border-left: 3px solid var(--brass-dim);
+}
+.nodecard:hover { background: var(--surface2); }
+.nodecard.orphan { border-left-color: var(--err); }
+.nodecard .nm {
+  font-family: "IBM Plex Mono", monospace; font-size: 13.5px; font-weight: 600;
+  color: var(--tok-node);
+}
+.nodecard .meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.nodecard .meta em { color: var(--err); font-style: normal; font-weight: 600; }
+.flags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+.flag {
+  font-family: "IBM Plex Mono", monospace; font-size: 10.5px;
+  padding: 1px 6px; border-radius: 2px; background: var(--surface2); color: var(--muted);
+}
+.flag.fx { background: var(--err-soft); color: var(--err); }
+.flag.tag { background: var(--ok-soft); color: var(--ok); }
+.flag.timer { background: var(--warn-soft); color: var(--warn); }
+
+.castrow { display: grid; grid-template-columns: 1.2fr .8fr auto auto; gap: 7px; margin-bottom: 6px; align-items: center; }
+.castrow input[type="text"] {
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px; padding: 5px 8px;
+  background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius);
+  min-width: 0;
+}
+.castrow select {
+  font-family: Barlow, sans-serif; font-size: 12.5px; padding: 5px 6px;
+  background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.castrow input[type="color"] {
+  width: 32px; height: 28px; padding: 1px; background: var(--bg);
+  border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer;
+}
+/* ------------------------------------------------------------------ colour */
+.colhead { display: flex; gap: 14px; align-items: center; margin-bottom: 12px; }
+#colwheel {
+  width: 76px; height: 62px; padding: 2px; flex: 0 0 auto;
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer;
+}
+.colfields { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.colfields label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.1px;
+  color: var(--faint); font-weight: 700;
+}
+#colhex {
+  font-family: "IBM Plex Mono", monospace; font-size: 15px; font-weight: 600;
+  padding: 5px 9px; width: 120px; text-transform: lowercase;
+  background: var(--bg); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+#colhex.bad { border-color: var(--err); color: var(--err); }
+.contrast { font-size: 12px; color: var(--muted); font-weight: 600; }
+.contrast b { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+.contrast.good { color: var(--ok); }
+.contrast.ok   { color: var(--warn); }
+.contrast.poor { color: var(--err); }
+
+/* Painted with the in-game box colour, not a theme token — the whole point is judging the line
+   against the surface it will actually sit on. */
+.colsample {
+  background: #0D0D12; color: #E6E3DC;
+  padding: 15px 17px; border-radius: var(--radius);
+  border: 1px solid var(--line);
+  font-size: 17px; line-height: 1.6; margin-bottom: 11px;
+}
+
+.coltagrow { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+#coltag {
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px;
+  background: var(--surface2); color: var(--ink);
+  padding: 5px 9px; border-radius: var(--radius);
+}
+.colh {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--brass); margin: 16px 0 7px; font-weight: 700;
+}
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatch {
+  width: 34px; height: 34px; padding: 0; border-radius: var(--radius);
+  border: 1px solid var(--line); cursor: pointer; position: relative;
+}
+.swatch:hover { transform: translateY(-2px); border-color: var(--brass); }
+.swatch[aria-pressed="true"] { outline: 2px solid var(--brass); outline-offset: 2px; }
+.swatches .none { font-size: 12.5px; color: var(--faint); font-style: italic; }
+
+.hint { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 10px 0 0; }
+.hint code { font-family: "IBM Plex Mono", monospace; font-size: 12px; background: var(--surface2); padding: 0 4px; }
+
+.cheat { font-size: 13px; line-height: 1.6; }
+.cheat table { width: 100%; border-collapse: collapse; }
+.cheat td { padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.cheat td:first-child {
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px;
+  color: var(--tok-fx); white-space: nowrap; width: 1%; padding-right: 16px;
+}
+.cheat h4 {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--brass); margin: 16px 0 6px; font-weight: 700;
+}
+.cheat h4:first-child { margin-top: 0; }
+
+.exportbox {
+  width: 100%; min-height: 190px; resize: vertical;
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px; line-height: 1.55;
+  padding: 11px; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--radius); white-space: pre;
+}
+
+.toast {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(12px);
+  background: var(--ink); color: var(--bg);
+  padding: 9px 18px; border-radius: var(--radius); font-size: 13.5px; font-weight: 600;
+  box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+  transition: opacity .18s, transform .18s; z-index: 50;
+}
+.toast.up { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 940px) {
+  .app { height: auto; }
+  .main { grid-template-columns: 1fr; }
+  .editorwrap { height: 460px; }
+  .desk { height: 420px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; }
+}
+
+/* ------------------------------------------------------------------ Modal Styling */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15, 17, 22, 0.65); backdrop-filter: blur(2px);
+  align-items: center; justify-content: center; z-index: 99;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--line);
+  box-shadow: var(--shadow); border-radius: var(--radius);
+  width: 580px; max-width: 92%; padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.modal h3 {
+  margin: 0; font-family: "Passion One", Barlow, sans-serif;
+  font-size: 22px; letter-spacing: .3px; color: var(--ink);
+}
+.modal textarea {
+  width: 100%; height: 210px; resize: vertical;
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px; line-height: 1.5;
+  padding: 10px; background: var(--bg); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.modal { width: 980px; }
+.import-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.import-cols label {
+  display: block; margin-bottom: 4px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--faint); font-weight: 700;
+}
+#import-notes { max-height: 130px; overflow: auto; }
+@media (max-width: 700px) { .import-cols { grid-template-columns: 1fr; } }
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><b>TEN PACES</b><span>Dialogue Desk</span></div>
+    <div class="fileid">
+      <label for="fid">File</label>
+      <input id="fid" type="text" value="sheriff_intro" spellcheck="false">
+      <span class="ext">.txt</span>
+    </div>
+    <div class="spacer"></div>
+    <button id="btn-open" class="ghost">Open .txt</button>
+    <button id="btn-download" class="ghost">Download .txt</button>
+    <input id="file-open" type="file" accept=".txt,text/plain" hidden>
+    <button id="btn-import-doc" class="ghost">Import Google Doc</button>
+    <button id="btn-sample" class="ghost">Load example</button>
+    <button id="btn-play" class="primary">Play scene</button>
+  </header>
+
+  <div class="main">
+    <!-- ------------------------------------------------------- script -->
+    <section class="pane">
+      <div class="panehead">Script <span class="count" id="stat-lines"></span></div>
+      <div class="toolbar">
+        <div class="group">
+          <button id="btn-undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+          <button id="btn-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷</button>
+        </div>
+        <div class="group">
+          <span class="grouplabel">Add</span>
+          <button data-snip="node">Node</button>
+          <button data-snip="line">Line</button>
+          <button data-snip="choice">Choice</button>
+        </div>
+        <div class="group">
+          <span class="grouplabel">Motion</span>
+          <button data-wrap="shake">shake</button>
+          <button data-wrap="wave">wave</button>
+          <button data-wrap="wobble">wobble</button>
+          <button data-wrap="jump">jump</button>
+        </div>
+        <div class="group">
+          <span class="grouplabel">Timing</span>
+          <button data-snip="pause">pause</button>
+          <button data-wrap="speed">speed</button>
+        </div>
+        <div class="group">
+          <span class="grouplabel">Colour</span>
+          <button data-wrap="color">colour</button>
+        </div>
+        <div class="group">
+          <span class="grouplabel">Consequence</span>
+          <button data-snip="tag">tag</button>
+          <button data-snip="perk">perk</button>
+          <button data-snip="grant">grant</button>
+          <button data-snip="timer">timer</button>
+        </div>
+      </div>
+      <div class="editorwrap">
+        <div class="gutter" id="gutter"></div>
+        <div class="codebox">
+          <pre id="highlight" class="code-shared" aria-hidden="true"></pre>
+          <textarea id="source" class="code-shared" spellcheck="false"
+                    aria-label="Dialogue script"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- stage + desk -->
+    <section class="pane">
+      <div class="stage">
+        <div class="panehead">
+          Stage
+          <span class="count" id="stage-where"></span>
+          <div class="spacer"></div>
+          <button id="btn-restart" class="ghost" style="padding:3px 9px;font-size:11.5px">Restart</button>
+          <button id="btn-skip" class="ghost" style="padding:3px 9px;font-size:11.5px">Reveal</button>
+        </div>
+        <div class="stageboard">
+          <div class="portraits">
+            <div class="portrait absent" id="pt-left">
+              <div class="sidetag">Left</div><div class="who" id="pt-left-name">—</div>
+            </div>
+            <div class="portrait absent" id="pt-right">
+              <div class="sidetag">Right</div><div class="who" id="pt-right-name">—</div>
+            </div>
+          </div>
+          <div class="timerrail" id="timerrail" hidden><div class="timerfill" id="timerfill"></div></div>
+          <div class="textbox" id="textbox"><span class="empty">Press Play scene to walk the conversation.</span></div>
+          <div class="picks" id="picks"></div>
+        </div>
+        <div class="tagstrip">
+          <span class="lbl">Tags set</span>
+          <span id="tagchips"><span class="chip none">none yet</span></span>
+        </div>
+      </div>
+
+      <div class="desk">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-tab="issues">Checks <span class="badge" id="badge-issues">0</span></button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="outline">Outline <span class="badge" id="badge-nodes">0</span></button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="colour">Colour</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="cast">Cast</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="syntax">Syntax</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="export">Export</button>
+        </div>
+
+        <div class="tabbody" id="tab-issues"></div>
+        <div class="tabbody" id="tab-outline" hidden></div>
+
+        <div class="tabbody" id="tab-colour" hidden>
+          <div class="colhead">
+            <input type="color" id="colwheel" value="#c81e1e" aria-label="Pick a colour">
+            <div class="colfields">
+              <label for="colhex">Hex</label>
+              <input type="text" id="colhex" value="#c81e1e" spellcheck="false" maxlength="7">
+              <div id="colcontrast" class="contrast"></div>
+            </div>
+          </div>
+
+          <div class="colsample" id="colsample">
+            SHERIFF: You picked the <span id="colsampleword">wrong town</span>, stranger.
+          </div>
+
+          <div class="coltagrow">
+            <code id="coltag"></code>
+            <div class="spacer"></div>
+            <button id="btn-colwrap" class="primary">Wrap selection</button>
+            <button id="btn-colcopy">Copy tag</button>
+          </div>
+
+          <h4 class="colh">Palette</h4>
+          <div class="swatches" id="presets"></div>
+
+          <h4 class="colh">Recent</h4>
+          <div class="swatches" id="recents"></div>
+
+          <p class="hint">
+            Colour is TextMeshPro's own rich text, so it costs the effect system nothing and needs no
+            closing bookkeeping beyond <code>&lt;/color&gt;</code>. The contrast figure is measured
+            against <code>#0D0D12</code> — the colour the builder gives the in-game text box — not
+            against this tool's theme, so it tells you whether the line will be readable in the game.
+          </p>
+        </div>
+
+        <div class="tabbody" id="tab-cast" hidden>
+          <div id="castlist"></div>
+          <button id="btn-addcast" style="margin-top:8px">Add speaker</button>
+          <p class="hint">
+            The cast list is this tool's copy of your <code>SpeakerCatalogue</code>. It decides which
+            side each speaker stands on in the Stage above, and lets Checks flag a name that isn't in
+            it. It does not travel with the <code>.txt</code> — mirror it in Unity.
+            <code>{ENEMY}</code> needs no entry; it resolves to whoever is staged at runtime.
+          </p>
+        </div>
+
+        <div class="tabbody cheat" id="tab-syntax" hidden></div>
+
+        <div class="tabbody" id="tab-export" hidden>
+          <p class="hint" style="margin-top:0">
+            This is the file exactly as Unity will read it. Copy it into
+            <code>Assets/Resources/Dialogue/<span id="exp-name">sheriff_intro</span>.txt</code>,
+            then run <code>TenPaces &gt; Validate Dialogue</code> — that check is the authority, not this one.
+          </p>
+          <button id="btn-copy" class="primary" style="margin-bottom:9px">Copy file</button>
+          <textarea class="exportbox" id="exportbox" readonly spellcheck="false"></textarea>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Modal: Google Doc Translation Import -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <h3>Translate Google Doc</h3>
+    <p class="hint" style="margin:0">
+      Paste your draft on the left. The converted script appears on the right; nothing changes in your
+      script until you press Replace.
+    </p>
+    <div class="import-cols">
+      <div>
+        <label for="import-input">Pasted text</label>
+        <textarea id="import-input" placeholder="Paste your Google Doc draft here..." spellcheck="false"></textarea>
+      </div>
+      <div>
+        <label for="import-output">Converted script</label>
+        <textarea id="import-output" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div id="import-summary" class="hint" style="margin:0"></div>
+    <div id="import-notes"></div>
+    <div class="actions">
+      <button id="btn-import-cancel" class="ghost">Cancel</button>
+      <button id="btn-import-submit" class="primary" disabled>Replace script</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="dialogue-core.js"></script>
+<script>
+"use strict";
+
+// Pure logic (parser, validator, converter) lives in dialogue-core.js.
+const {
+  SEEN_PREFIX, isEffectTag, speakerColon,
+  parseConversation, validate,
+  convertScript, esc
+} = DialogueCore;
+
+/* ==================================================================
+   VIEW
+   ================================================================== */
+
+const $ = (id) => document.getElementById(id);
+
+const srcEl = $("source"), hlEl = $("highlight"), gutEl = $("gutter");
+
+let cast = [
+  { key: "SHERIFF", side: "Right", colour: "#c8643c" },
+  { key: "{PLAYER}", side: "Left", colour: "#e8e6e0" }
+];
+let conv = null, issues = [];
+
+const SAMPLE = `// The first meeting. Sets \`met_sheriff\`, which a rematch file can read.
+//
+// A two-hander: SHERIFF holds the right side and {PLAYER} the left, so both
+// portraits are exercised and the dimming reads.
+
+# opening
+SHERIFF: You picked the <color=#c81e1e>wrong town</color>, stranger.
+{PLAYER}: I've heard that one before.
+SHERIFF: Ten paces.[pause=0.4] [shake]You know how this goes.[/shake]
+
+# threat
+@timer 4 -> back_down
+SHERIFF: Well?[pause=0.5] Say something.
+> "Just passing through."                 -> passing
+> "You talk a lot for a dead man."        -> insult
+> [met_sheriff] "We've met before."       -> callback
+> [!cocky] Say nothing.                   -> back_down
+
+# insult
+@tag cocky
+@perk Scattershot
+{PLAYER}: You talk a lot for a dead man.
+SHERIFF: [wobble=1.4]...Ten paces. Now.[/wobble]
+-> END
+
+# passing
+@tag polite
+@tag met_sheriff
+{PLAYER}: Just passing through.
+SHERIFF: Nobody's just passing. Not here.
+SHERIFF: [speed=0.6]Not any more.[/speed]
+-> END
+
+# callback
+@tag met_sheriff
+{PLAYER}: We've met before.
+SHERIFF: [wave]So we have.[/wave] Didn't finish it then either.
+-> END
+
+# back_down
+@tag met_sheriff
+SHERIFF: [jump]Thought so.[/jump]
+`;
+
+/* ------------------------------------------------------------ highlighting */
+function highlightLine(raw) {
+  const t = raw.trim();
+  if (!t) return "";
+  const lead = raw.slice(0, raw.length - raw.trimStart().length);
+  const L = (cls, s) => `<span class="${cls}">${esc(s)}</span>`;
+
+  if (t.startsWith("//")) return lead + L("t-comment", t);
+  if (t[0] === "#") return lead + L("t-node", t);
+
+  if (t.startsWith("->")) {
+    const to = t.slice(2).trim();
+    return lead + L("t-jump", "-> ") + L(to.toLowerCase() === "end" ? "t-jump" : "t-node", to);
+  }
+
+  if (t[0] === "@") {
+    const sp = t.indexOf(" ");
+    if (sp < 0) return lead + L("t-dir", t);
+    return lead + L("t-dir", t.slice(0, sp)) + inlineFx(t.slice(sp));
+  }
+
+  if (t[0] === ">") {
+    let rest = t.slice(1), gate = "";
+    const b = rest.trimStart();
+    if (b[0] === "[") {
+      const rb = b.indexOf("]");
+      if (rb > 0 && !isEffectTag(b.slice(1, rb))) {
+        gate = L("t-gate", b.slice(0, rb + 1));
+        rest = rest.slice(rest.indexOf("]") + 1);
+      }
+    }
+    const arrow = rest.lastIndexOf("->");
+    let tail = "";
+    if (arrow >= 0) { tail = L("t-jump", "->") + L("t-node", rest.slice(arrow + 2)); rest = rest.slice(0, arrow); }
+    return lead + L("t-choice", ">") + (gate ? " " + gate : "") + inlineFx(rest) + tail;
+  }
+
+  const colon = speakerColon(t);
+  if (colon > 0) return lead + L("t-speaker", t.slice(0, colon + 1)) + inlineFx(t.slice(colon + 1));
+  return lead + esc(t);
+}
+
+function inlineFx(s) {
+  let out = "", i = 0;
+  while (i < s.length) {
+    if (s[i] === "\\" && s[i + 1] === "[") { out += esc("\\["); i += 2; continue; }
+    if (s[i] === "<") {
+      const gt = s.indexOf(">", i + 1);
+      if (gt > 0) { out += `<span class="t-tmp">${esc(s.slice(i, gt + 1))}</span>`; i = gt + 1; continue; }
+    }
+    if (s[i] === "[") {
+      const rb = s.indexOf("]", i + 1);
+      if (rb > 0) { out += `<span class="t-fx">${esc(s.slice(i, rb + 1))}</span>`; i = rb + 1; continue; }
+    }
+    out += esc(s[i]); i++;
+  }
+  return out;
+}
+
+function paint() {
+  const text = srcEl.value;
+  const lines = text.split("\n");
+  hlEl.innerHTML = lines.map(highlightLine).join("\n") + "\n";
+
+  const bad = new Map();
+  issues.forEach((w) => { if (!bad.has(w.line) || w.sev === "err") bad.set(w.line, w.sev); });
+  gutEl.innerHTML = lines.map((_, i) => {
+    const s = bad.get(i + 1);
+    return `<div class="${s === "err" ? "bad" : s ? "warnline" : ""}">${i + 1}</div>`;
+  }).join("");
+
+  hlEl.scrollTop = srcEl.scrollTop; hlEl.scrollLeft = srcEl.scrollLeft;
+  gutEl.scrollTop = srcEl.scrollTop;
+  $("stat-lines").textContent = `${lines.length} lines · ${text.length} chars`;
+}
+
+/* ------------------------------------------------------------ panels */
+function renderIssues() {
+  const box = $("tab-issues");
+  const errs = issues.filter((i) => i.sev === "err").length;
+  const badge = $("badge-issues");
+  badge.textContent = issues.length;
+  badge.className = "badge" + (errs ? " err" : issues.length ? " warn" : "");
+
+  if (!issues.length) {
+    box.innerHTML = `<div class="allclear">Nothing to report — this file is clean.</div>
+      <p class="hint">Unity's <code>TenPaces &gt; Validate Dialogue</code> runs the same checks plus the
+      ones only it can do: <code>@grant</code> against real upgrade assets, and cross-file tags.</p>`;
+    return;
+  }
+  box.innerHTML = issues.map((w) =>
+    `<button class="issue sev-${w.sev}" data-line="${w.line}">
+       <span class="where">${w.line}</span><span>${w.msg}</span>
+     </button>`).join("");
+  box.querySelectorAll(".issue").forEach((b) =>
+    b.addEventListener("click", () => gotoLine(+b.dataset.line)));
+}
+
+function renderOutline() {
+  const box = $("tab-outline");
+  $("badge-nodes").textContent = conv.nodes.length;
+  const reachable = new Set(issues.filter((i) => /cannot be reached/.test(i.msg)).map((i) => i.line));
+
+  box.innerHTML = conv.nodes.map((nd, i) => {
+    const exits = [];
+    if (nd.ends) exits.push("ends");
+    else if (nd.jump) exits.push(`→ ${esc(nd.jump)}`);
+    else if (!nd.choices.length) exits.push(i + 1 < conv.nodes.length ? "falls through" : "ends (last node)");
+    nd.choices.forEach((c) => exits.push(`→ ${esc(c.target || "next")}`));
+
+    const flags = [];
+    if (nd.timer) flags.push(`<span class="flag timer">timer ${nd.timer}s → ${esc(nd.timerTo || "")}</span>`);
+    nd.tags.forEach((t) => flags.push(`<span class="flag tag">@tag ${esc(t)}</span>`));
+    nd.perks.forEach((p) => flags.push(`<span class="flag fx">@perk ${esc(p)}</span>`));
+    nd.grants.forEach((g) => flags.push(`<span class="flag fx">@grant ${esc(g)}</span>`));
+    const fx = new Set();
+    nd.lines.forEach((l) => l.t.effects.forEach((e) => fx.add(e.kind)));
+    fx.forEach((f) => flags.push(`<span class="flag fx">${f}</span>`));
+
+    return `<button class="nodecard ${reachable.has(nd.line) ? "orphan" : ""}" data-line="${nd.line}">
+      <div class="nm">${nd.label ? "# " + esc(nd.label) : "(opening node)"}</div>
+      <div class="meta">${nd.lines.length} line${nd.lines.length === 1 ? "" : "s"}${
+        nd.choices.length ? ` · ${nd.choices.length} choice${nd.choices.length === 1 ? "" : "s"}` : ""
+      } · ${exits.join(", ") || "—"}${reachable.has(nd.line) ? " · <em>unreachable</em>" : ""}</div>
+      ${flags.length ? `<div class="flags">${flags.join("")}</div>` : ""}
+    </button>`;
+  }).join("");
+
+  box.querySelectorAll(".nodecard").forEach((b) =>
+    b.addEventListener("click", () => gotoLine(+b.dataset.line)));
+}
+
+function renderCast() {
+  $("castlist").innerHTML = cast.map((c, i) => `
+    <div class="castrow">
+      <input type="text" value="${esc(c.key)}" data-i="${i}" data-f="key" aria-label="Speaker key">
+      <select data-i="${i}" data-f="side" aria-label="Side">
+        <option${c.side === "Left" ? " selected" : ""}>Left</option>
+        <option${c.side === "Right" ? " selected" : ""}>Right</option>
+      </select>
+      <input type="color" value="${/^#[0-9a-f]{6}$/i.test(c.colour) ? c.colour : "#cccccc"}" data-i="${i}" data-f="colour" aria-label="Name colour">
+      <button data-del="${i}" title="Remove">✕</button>
+    </div>`).join("");
+
+  $("castlist").querySelectorAll("[data-f]").forEach((el) =>
+    el.addEventListener("input", () => {
+      cast[+el.dataset.i][el.dataset.f] = el.value;
+      save(); recompute();
+    }));
+  $("castlist").querySelectorAll("[data-del]").forEach((b) =>
+    b.addEventListener("click", () => { cast.splice(+b.dataset.del, 1); save(); renderCast(); recompute(); }));
+}
+
+$("tab-syntax").innerHTML = `
+  <h4>Structure</h4><table>
+  <tr><td># label</td><td>Starts a node. Only jump targets need one — everything else falls through to the next node.</td></tr>
+  <tr><td>SPEAKER: text</td><td>One line, one keypress. Several to a node is normal.</td></tr>
+  <tr><td>{ENEMY}</td><td>Resolves to whoever is staged, with their name and portrait. Use it for a scene reusable across opponents.</td></tr>
+  <tr><td>{PLAYER}</td><td>The player's own catalogue entry.</td></tr>
+  <tr><td>-&gt; label</td><td>Jump at the end of a node.</td></tr>
+  <tr><td>-&gt; END</td><td>The conversation is over.</td></tr>
+  <tr><td>// text</td><td>Comment. Whole line only.</td></tr></table>
+
+  <h4>Choices</h4><table>
+  <tr><td>&gt; text -&gt; label</td><td>An option. Without <code>-&gt;</code> it falls through — for a line that changes what you said, not where the scene goes.</td></tr>
+  <tr><td>&gt; [tag] text</td><td>Hidden unless the tag is set.</td></tr>
+  <tr><td>&gt; [!tag] text</td><td>Hidden <em>if</em> the tag is set.</td></tr></table>
+
+  <h4>Consequences — fired on entering the node, not on the choice that led there</h4><table>
+  <tr><td>@tag name</td><td>Sets a tag. Readable by later conversations, and by the run itself.</td></tr>
+  <tr><td>@untag name</td><td>Clears one.</td></tr>
+  <tr><td>@perk Scattershot</td><td>Makes the staged opponent harder. Pre-duel scenes only.</td></tr>
+  <tr><td>@grant Name</td><td>Gives an upgrade. Post-duel scenes only — before a duel it would land a fight late.</td></tr>
+  <tr><td>@timer 4 -&gt; label</td><td>Choice timer. Starts only once the text is fully revealed.</td></tr></table>
+
+  <h4>Motion — wraps a stretch of text</h4><table>
+  <tr><td>[shake]…[/shake]</td><td>Jitter. <code>[shake=2.5]</code> for more.</td></tr>
+  <tr><td>[wave]…[/wave]</td><td>A sine that travels along the line.</td></tr>
+  <tr><td>[wobble]…[/wobble]</td><td>Each letter rotates about its own centre.</td></tr>
+  <tr><td>[jump]…[/jump]</td><td>Letters hop on a stagger.</td></tr></table>
+
+  <h4>Timing</h4><table>
+  <tr><td>[pause=0.4]</td><td>Stops the reveal for that long, right there. No closing tag.</td></tr>
+  <tr><td>[speed=0.5]…[/speed]</td><td>Reveals slower (or faster above 1).</td></tr></table>
+
+  <h4>Colour — plain TextMeshPro, free</h4><table>
+  <tr><td>&lt;color=#c81e1e&gt;…&lt;/color&gt;</td><td>Colour is TMP's own rich text, so it costs this system nothing.</td></tr>
+  <tr><td>&lt;b&gt; &lt;i&gt;</td><td>Bold and italic work too.</td></tr>
+  <tr><td>\\[</td><td>A literal opening bracket.</td></tr></table>`;
+
+/* ------------------------------------------------------------ colour
+   The colour the toolbar's "colour" button and the Colour tab both write. One
+   piece of state, so picking a swatch changes what the button inserts. */
+
+// What DialogueUIBuilder paints the in-game text box: new Color(.05f,.05f,.07f,.92f).
+// Contrast is judged against this rather than the tool's own theme, because that is the
+// surface the line actually has to be read on.
+const GAME_BOX = "#0D0D12";
+
+const PRESETS = [
+  ["#C81E1E", "Blood"],   ["#E0553A", "Ember"],  ["#D9A441", "Brass"],
+  ["#E8D9A0", "Lamplight"], ["#7FB069", "Sage"], ["#6E8DA0", "Dusk"],
+  ["#B98BD9", "Laudanum"], ["#E6E3DC", "Bone"],  ["#9A9086", "Ash"],
+  ["#8A6A28", "Tarnish"]
+];
+
+let colour = "#c81e1e";
+let recents = [];
+
+const hexOk = (h) => /^#[0-9a-f]{6}$/i.test(h);
+
+function hexToRgb(h) {
+  return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+}
+function channelLum(c) {
+  c /= 255;
+  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+function luminance(hex) {
+  const [r, g, b] = hexToRgb(hex);
+  return 0.2126 * channelLum(r) + 0.7152 * channelLum(g) + 0.0722 * channelLum(b);
+}
+function contrastRatio(a, b) {
+  const l1 = luminance(a), l2 = luminance(b);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+function setColour(hex, remember) {
+  if (!hexOk(hex)) return;
+  colour = hex.toLowerCase();
+  if (remember) {
+    recents = [colour].concat(recents.filter((c) => c !== colour)).slice(0, 12);
+  }
+  renderColour();
+  save();
+}
+
+function renderColour() {
+  $("colwheel").value = colour;
+  const box = $("colhex");
+  if (box.value.toLowerCase() !== colour) box.value = colour;
+  box.classList.remove("bad");
+
+  $("colsampleword").style.color = colour;
+  $("coltag").textContent = `<color=${colour}>…</color>`;
+
+  const r = contrastRatio(colour, GAME_BOX);
+  const el = $("colcontrast");
+  const cls = r >= 4.5 ? "good" : r >= 3 ? "ok" : "poor";
+  const verdict = r >= 4.5 ? "clear on the in-game box"
+                : r >= 3   ? "readable, but only at this size"
+                :            "hard to read in game";
+  el.className = "contrast " + cls;
+  el.innerHTML = `<b>${r.toFixed(1)}:1</b> — ${verdict}`;
+
+  const swatch = (hex, name, pressed) =>
+    `<button class="swatch" style="background:${hex}" data-hex="${hex}" ` +
+    `aria-pressed="${pressed}" title="${name ? name + " — " : ""}${hex}"></button>`;
+
+  $("presets").innerHTML = PRESETS
+    .map(([hex, name]) => swatch(hex, name, hex.toLowerCase() === colour)).join("");
+  $("recents").innerHTML = recents.length
+    ? recents.map((hex) => swatch(hex, "", hex === colour)).join("")
+    : '<span class="none">Colours you insert collect here.</span>';
+
+  document.querySelectorAll(".swatch").forEach((b) =>
+    b.addEventListener("click", () => setColour(b.dataset.hex, false)));
+}
+
+function insertColour() {
+  wrapSelection(`<color=${colour}>`, "</color>");
+  setColour(colour, true);
+}
+
+$("colwheel").addEventListener("input", (e) => setColour(e.target.value, false));
+$("colhex").addEventListener("input", (e) => {
+  let v = e.target.value.trim();
+  if (v && v[0] !== "#") v = "#" + v;
+  if (hexOk(v)) setColour(v, false);
+  else e.target.classList.add("bad");
+});
+$("btn-colwrap").addEventListener("click", insertColour);
+$("btn-colcopy").addEventListener("click", async () => {
+  const tag = `<color=${colour}></color>`;
+  let ok = false;
+  try { await navigator.clipboard.writeText(tag); ok = true; } catch (e) { ok = false; }
+  toast(ok ? "Copied " + tag : "Clipboard blocked — type it as " + tag);
+  if (ok) setColour(colour, true);
+});
+
+/* ------------------------------------------------------------ stage */
+const stage = {
+  playing: false, node: 0, line: 0, revealed: 0, acc: 0,
+  pauseLeft: 0, pauseAt: 0, tags: new Set(), waiting: false,
+  timeLeft: 0, timeTotal: 0, cur: null, last: 0, sides: { Left: null, Right: null }
+};
+
+const sideOf = (who) => {
+  if (who === "{ENEMY}") return "Right";
+  const e = cast.find((c) => c.key.toLowerCase() === who.toLowerCase());
+  return e ? e.side : "Left";       // matches SpeakerCatalogue.SideOf's fallback
+};
+const colourOf = (who) => {
+  const e = cast.find((c) => c.key.toLowerCase() === who.toLowerCase());
+  return e ? e.colour : null;
+};
+
+function startPlay() {
+  if (!conv || !conv.nodes.length) return;
+  Object.assign(stage, {
+    playing: true, node: 0, line: 0, revealed: 0, acc: 0, pauseLeft: 0, pauseAt: 0,
+    tags: new Set(), waiting: false, timeLeft: 0, timeTotal: 0, cur: null,
+    sides: { Left: null, Right: null }, last: performance.now()
+  });
+  $("pt-left").className = "portrait absent"; $("pt-left-name").textContent = "—";
+  $("pt-right").className = "portrait absent"; $("pt-right-name").textContent = "—";
+  enterNode(0, 0);
+}
+
+function enterNode(i, hops) {
+  const nd = conv.nodes[i];
+  if (!nd || hops > conv.nodes.length + 1) return finish();
+  stage.node = i; stage.line = 0;
+  nd.tags.forEach((t) => stage.tags.add(t));
+  nd.untags.forEach((t) => stage.tags.delete(t));
+  paintTags();
+  if (nd.lines.length) return showLine(nd.lines[0]);
+  afterLines(nd, hops);
+}
+
+function showLine(l) {
+  stage.cur = l; stage.revealed = 0; stage.acc = 0; stage.pauseLeft = 0; stage.pauseAt = 0;
+  const side = sideOf(l.who), other = side === "Left" ? "Right" : "Left";
+  stage.sides[side] = l.who;
+
+  const el = (s) => $("pt-" + s.toLowerCase());
+  const nm = (s) => $("pt-" + s.toLowerCase() + "-name");
+  el(side).className = "portrait active";
+  nm(side).textContent = l.who;
+  const col = colourOf(l.who);
+  nm(side).style.color = col || "";
+  if (stage.sides[other]) { el(other).className = "portrait inactive"; }
+
+  // Hoisted: recomputing this inside the map would strip the tags once per character.
+  const plain = l.t.text.replace(/<[^>]*>/g, "");
+
+  const spans = l.t.styles.map((st, i) => {
+    const ch = plain[i];
+    const s = [];
+    if (st.color) s.push(`color:${st.color}`);
+    if (st.bold) s.push("font-weight:700");
+    if (st.italic) s.push("font-style:italic");
+
+    // Spaces stay display:inline so the line can still wrap at them — an inline-block holding a
+    // space is not a break opportunity, and a long line would run straight off the side of the box.
+    // They also never show motion, which matches Unity exactly: the animator skips !isVisible
+    // characters, and whitespace is precisely what that means there.
+    const sp = ch === " ";
+    return `<span class="ch${sp ? " sp" : ""} hidden" data-i="${i}"` +
+           `${s.length ? ` style="${s.join(";")}"` : ""}>${sp ? " " : esc(ch)}</span>`;
+  }).join("");
+  $("textbox").innerHTML = spans || '<span class="empty">(empty line)</span>';
+  $("picks").innerHTML = "";
+  $("timerrail").hidden = true;
+  if (!l.t.visible) revealComplete();
+  updateWhere();
+}
+
+function afterLines(nd, hops) {
+  const avail = nd.choices.filter((c) => !c.gate || (stage.tags.has(c.gate) !== c.neg));
+  if (nd.choices.length && avail.length) return offer(nd, avail);
+  exitNode(nd, hops);
+}
+
+function offer(nd, avail) {
+  stage.waiting = true;
+  $("picks").innerHTML = avail.map((c, i) =>
+    `<button class="pick" data-i="${i}">${
+      c.gate ? `<span class="gatemark">[${c.neg ? "!" : ""}${esc(c.gate)}]</span>` : ""
+    }${esc(c.t.text.replace(/<[^>]*>/g, ""))}</button>`).join("");
+  $("picks").querySelectorAll(".pick").forEach((b) =>
+    b.addEventListener("click", () => { stage.waiting = false; $("picks").innerHTML = ""; take(avail[+b.dataset.i]); }));
+
+  if (nd.timer) {
+    stage.timeTotal = nd.timer; stage.timeLeft = nd.timer;
+    $("timerrail").hidden = false; $("timerfill").style.width = "100%";
+  }
+  updateWhere();
+}
+
+function take(c) {
+  $("timerrail").hidden = true; stage.timeTotal = 0;
+  if (!c.target) return stage.node + 1 < conv.nodes.length ? enterNode(stage.node + 1, 0) : finish();
+  goTo(c.target);
+}
+
+function exitNode(nd, hops) {
+  if (nd.ends) return finish();
+  if (nd.jump) return goTo(nd.jump, hops);
+  return stage.node + 1 < conv.nodes.length ? enterNode(stage.node + 1, hops + 1) : finish();
+}
+
+function goTo(label, hops) {
+  if (!label || label.toLowerCase() === "end") return finish();
+  const i = conv.byLabel.get(label.toLowerCase());
+  if (i === undefined) return finish();
+  enterNode(i, (hops || 0) + 1);
+}
+
+function finish() {
+  stage.playing = false; stage.cur = null; stage.waiting = false;
+  $("picks").innerHTML = ""; $("timerrail").hidden = true;
+  $("textbox").innerHTML = '<span class="empty">Scene over. Press Play scene to run it again.</span>';
+  updateWhere();
+}
+
+function advance() {
+  if (!stage.playing || stage.waiting) return;
+  const l = stage.cur;
+  if (l && stage.revealed < l.t.visible) return revealAll();
+  const nd = conv.nodes[stage.node];
+  stage.line++;
+  if (stage.line < nd.lines.length) return showLine(nd.lines[stage.line]);
+  afterLines(nd, 0);
+}
+
+function revealAll() {
+  if (!stage.cur) return;
+  stage.revealed = stage.cur.t.visible; stage.pauseLeft = 0;
+  stage.pauseAt = stage.cur.t.pauses.length;
+  applyReveal(); revealComplete();
+}
+
+function revealComplete() {
+  const nd = conv.nodes[stage.node];
+  if (!nd) return;
+  if (stage.line >= nd.lines.length - 1 && nd.choices.length) {
+    const avail = nd.choices.filter((c) => !c.gate || (stage.tags.has(c.gate) !== c.neg));
+    if (avail.length) offer(nd, avail);
+  }
+}
+
+function applyReveal() {
+  const box = $("textbox");
+  const chs = box.querySelectorAll(".ch");
+  for (let i = 0; i < chs.length; i++) chs[i].classList.toggle("hidden", i >= stage.revealed);
+}
+
+function paintTags() {
+  const t = [...stage.tags];
+  $("tagchips").innerHTML = t.length
+    ? t.map((x) => `<span class="chip${x.startsWith(SEEN_PREFIX) ? " seen" : ""}">${esc(x)}</span>`).join(" ")
+    : '<span class="chip none">none yet</span>';
+}
+
+function updateWhere() {
+  const nd = conv && conv.nodes[stage.node];
+  $("stage-where").textContent = stage.playing && nd
+    ? `${nd.label ? "# " + nd.label : "opening"} · line ${stage.line + 1}/${Math.max(1, nd.lines.length)}`
+    : "";
+}
+
+/* Deterministic per (character, time step) — the same hash the Unity animator uses,
+   so a shake previewed here is the shake that ships. */
+function noise(a, b) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663)) | 0;
+  h = Math.imul(h ^ (h >> 13), 1274126177) | 0;
+  h ^= h >> 16;
+  return ((h & 0xffff) / 32767.5) - 1;
+}
+
+// Typewriter speed at [speed=1]. Keep in step with the Unity text reveal.
+const CHARS_PER_SECOND = 45;
+
+let effectsOn = true;
+function frame(now) {
+  const dt = Math.min(0.05, (now - stage.last) / 1000) || 0;
+  stage.last = now;
+
+  if (stage.playing && stage.cur && !stage.waiting) {
+    const t = stage.cur.t;
+    if (stage.revealed < t.visible) {
+      if (stage.pauseLeft > 0) stage.pauseLeft -= dt;
+      else if (!takePause()) {
+        let mul = 1;
+        t.speeds.forEach((s) => { if (stage.revealed >= s.first && stage.revealed <= s.last) mul *= s.mul; });
+        stage.acc += dt * CHARS_PER_SECOND * mul;
+        while (stage.acc >= 1 && stage.revealed < t.visible) {
+          stage.acc -= 1; stage.revealed++;
+          if (takePause()) break;
+        }
+        applyReveal();
+        if (stage.revealed >= t.visible) revealComplete();
+      }
+    }
+  }
+
+  if (stage.playing && stage.waiting && stage.timeTotal > 0) {
+    stage.timeLeft -= dt;
+    $("timerfill").style.width = Math.max(0, (stage.timeLeft / stage.timeTotal) * 100) + "%";
+    if (stage.timeLeft <= 0) {
+      const nd = conv.nodes[stage.node];
+      stage.waiting = false; stage.timeTotal = 0;
+      $("picks").innerHTML = ""; $("timerrail").hidden = true;
+      goTo(nd.timerTo);
+    }
+  }
+
+  animateChars(now / 1000);
+  requestAnimationFrame(frame);
+}
+
+function takePause() {
+  const t = stage.cur.t;
+  while (stage.pauseAt < t.pauses.length && t.pauses[stage.pauseAt].index < stage.revealed) stage.pauseAt++;
+  if (stage.pauseAt < t.pauses.length && t.pauses[stage.pauseAt].index === stage.revealed) {
+    stage.pauseLeft = t.pauses[stage.pauseAt].secs; stage.pauseAt++; return true;
+  }
+  return false;
+}
+
+function animateChars(time) {
+  if (!stage.cur) return;
+  const t = stage.cur.t;
+  if (!t.effects.length) return;
+  const chs = $("textbox").querySelectorAll(".ch");
+  const step = Math.floor(time / 0.05);
+
+  for (let i = 0; i < chs.length && i < stage.revealed; i++) {
+    let x = 0, y = 0, rot = 0, any = false;
+    if (effectsOn) {
+      for (const s of t.effects) {
+        if (i < s.first || i > s.last) continue;
+        any = true;
+        if (s.kind === "shake") { x += noise(i, step) * 2.2 * s.amp; y += noise(i, step + 8191) * 2.2 * s.amp; }
+        else if (s.kind === "wave") y += Math.sin(time * 3.5 + i * 0.35) * 3 * s.amp;
+        else if (s.kind === "wobble") rot += Math.sin(time * 3 + i * 0.5) * 8 * s.amp;
+        else if (s.kind === "jump") y += Math.max(0, Math.sin(time * 2.5 + i * 0.6)) * 4 * s.amp;
+      }
+    } else {
+      any = t.effects.some((s) => i >= s.first && i <= s.last);
+    }
+    chs[i].style.transform = any ? `translate(${x.toFixed(2)}px,${(-y).toFixed(2)}px) rotate(${rot.toFixed(2)}deg)` : "";
+  }
+}
+
+/* ------------------------------------------------------------ history
+
+   A textarea has native undo, and it would have been enough — except that assigning
+   .value from script throws the browser's undo stack away. Every toolbar button does
+   exactly that, so relying on the native stack would mean a writer loses their whole
+   history the first time they click "shake". This replaces it wholesale, and the
+   keyboard handler suppresses the native one so the two can never disagree.
+
+   Typing is coalesced into bursts: one entry per pause, not one per keystroke, so a
+   single Ctrl+Z takes back a word rather than a letter. Structural edits from the
+   toolbar commit immediately, because those are the ones a writer means to undo. */
+
+const HISTORY_LIMIT = 300;
+const BURST_MS = 500;
+
+const undoStack = [], redoStack = [];
+let committed = null;      // the state as of the last recorded entry
+let burstTimer = null;
+
+const snapshot = () => ({ v: srcEl.value, s: srcEl.selectionStart, e: srcEl.selectionEnd });
+
+function commitNow() {
+  if (burstTimer) { clearTimeout(burstTimer); burstTimer = null; }
+  if (!committed || srcEl.value === committed.v) return;   // early: leaves redo intact
+
+  undoStack.push(committed);
+  if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
+  redoStack.length = 0;                                    // a new edit forks the future
+  committed = snapshot();
+  refreshHistoryButtons();
+}
+
+function noteEdit(immediate) {
+  if (immediate) return commitNow();
+  if (burstTimer) clearTimeout(burstTimer);
+  burstTimer = setTimeout(commitNow, BURST_MS);
+}
+
+function applyState(st) {
+  srcEl.value = st.v;
+  committed = { v: st.v, s: st.s, e: st.e };
+  srcEl.focus();
+  try { srcEl.setSelectionRange(st.s, st.e); } catch (err) { /* out of range after a big undo */ }
+  recompute();
+  refreshHistoryButtons();
+}
+
+function undo() {
+  commitNow();                    // fold any half-typed burst in, so it can be taken back too
+  if (!undoStack.length) return;
+  redoStack.push(snapshot());
+  applyState(undoStack.pop());
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(snapshot());
+  applyState(redoStack.pop());
+}
+
+function refreshHistoryButtons() {
+  $("btn-undo").disabled = undoStack.length === 0;
+  $("btn-redo").disabled = redoStack.length === 0;
+}
+
+// Ctrl/Cmd+Z, Ctrl+Shift+Z and Ctrl+Y, wherever focus happens to be — a writer who has
+// just clicked a swatch is not focused on the textarea and still expects undo to work.
+function historyKeys(e) {
+  if (!(e.ctrlKey || e.metaKey)) return false;
+  const k = e.key.toLowerCase();
+  if (k === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return true; }
+  if (k === "y") { e.preventDefault(); redo(); return true; }
+  return false;
+}
+
+/* ------------------------------------------------------------ editing */
+// Selects line n of a textarea (the script editor by default) and scrolls it into view.
+function gotoLine(n, el = srcEl) {
+  const lines = el.value.split("\n");
+  let pos = 0;
+  for (let i = 0; i < n - 1 && i < lines.length; i++) pos += lines[i].length + 1;
+  el.focus();
+  el.setSelectionRange(pos, pos + (lines[n - 1] || "").length);
+  const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 20;
+  el.scrollTop = Math.max(0, (n - 1) * lineHeight - el.clientHeight / 2);
+  if (el === srcEl) paint();
+}
+
+function insertAt(text, caretBack) {
+  commitNow();                    // close any typing burst so it undoes separately from this
+  const s = srcEl.selectionStart, e = srcEl.selectionEnd;
+  srcEl.value = srcEl.value.slice(0, s) + text + srcEl.value.slice(e);
+  const p = s + text.length - (caretBack || 0);
+  srcEl.setSelectionRange(p, p);
+  srcEl.focus();
+  noteEdit(true);                 // one button press, one undo step
+  recompute();
+}
+
+function wrapSelection(open, close) {
+  commitNow();
+  const s = srcEl.selectionStart;
+  let e = srcEl.selectionEnd;
+
+  // Never wrap across a line break. Every dialogue line is parsed on its own, so a tag opened on
+  // one line and closed on the next leaves the first unterminated and the second holding an orphan
+  // closer — two warnings from one drag of the mouse.
+  const nl = srcEl.value.slice(s, e).indexOf("\n");
+  if (nl >= 0) e = s + nl;
+
+  const sel = srcEl.value.slice(s, e) || "text";
+  srcEl.value = srcEl.value.slice(0, s) + open + sel + close + srcEl.value.slice(e);
+  srcEl.setSelectionRange(s + open.length, s + open.length + sel.length);
+  srcEl.focus();
+  noteEdit(true);
+  recompute();
+}
+
+const SNIPPETS = {
+  node:   () => insertAt("\n# new_node\n", 1),
+  line:   () => insertAt("\nSPEAKER: \n", 1),
+  choice: () => insertAt("\n> option text -> target\n", 1),
+  pause:  () => insertAt("[pause=0.4]"),
+  tag:    () => insertAt("\n@tag name\n", 1),
+  perk:   () => insertAt("\n@perk Scattershot\n", 1),
+  grant:  () => insertAt("\n@grant Upgrade Name\n", 1),
+  timer:  () => insertAt("\n@timer 4 -> fallback_node\n", 1)
+};
+
+document.querySelectorAll("[data-snip]").forEach((b) =>
+  b.addEventListener("click", () => SNIPPETS[b.dataset.snip]()));
+document.querySelectorAll("[data-wrap]").forEach((b) =>
+  b.addEventListener("click", () => {
+    const k = b.dataset.wrap;
+    if (k === "color") insertColour();   // uses whatever the Colour tab currently holds
+    else if (k === "speed") wrapSelection("[speed=0.6]", "[/speed]");
+    else wrapSelection(`[${k}]`, `[/${k}]`);
+  }));
+
+/* ------------------------------------------------------------ tabs */
+document.querySelectorAll(".tab").forEach((t) =>
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", String(x === t)));
+    ["issues", "outline", "colour", "cast", "syntax", "export"].forEach((n) =>
+      $("tab-" + n).hidden = n !== t.dataset.tab);
+    if (t.dataset.tab === "export") refreshExport();
+  }));
+
+function refreshExport() {
+  $("exportbox").value = srcEl.value;
+  $("exp-name").textContent = $("fid").value.trim() || "conversation";
+}
+
+/* ------------------------------------------------------------ persistence */
+const KEY = "tenpaces.dialogue.desk.v1";
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({
+      src: srcEl.value, cast, id: $("fid").value, colour, recents
+    }));
+  } catch (e) { /* private window, blocked storage — drafts just don't persist */ }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    if (d.src) srcEl.value = d.src;
+    if (Array.isArray(d.cast) && d.cast.length) cast = d.cast;
+    if (d.id) $("fid").value = d.id;
+    if (hexOk(d.colour || "")) colour = d.colour.toLowerCase();
+    if (Array.isArray(d.recents)) recents = d.recents.filter(hexOk);
+    return !!d.src;
+  } catch (e) { return false; }
+}
+
+/* ------------------------------------------------------------ wiring */
+function recompute() {
+  conv = parseConversation(srcEl.value);
+  issues = validate(conv, cast);
+  paint(); renderIssues(); renderOutline();
+  if (!$("tab-export").hidden) refreshExport();
+  save();
+}
+
+srcEl.addEventListener("input", () => { noteEdit(false); recompute(); });
+srcEl.addEventListener("scroll", () => {
+  hlEl.scrollTop = srcEl.scrollTop; hlEl.scrollLeft = srcEl.scrollLeft;
+  gutEl.scrollTop = srcEl.scrollTop;
+});
+srcEl.addEventListener("keydown", (e) => {
+  if (historyKeys(e)) return;     // ours runs; the native stack is suppressed
+  if (e.key === "Tab") { e.preventDefault(); insertAt("    "); }
+});
+srcEl.addEventListener("blur", () => commitNow());   // never leave a burst uncommitted
+$("fid").addEventListener("input", () => { refreshExport(); save(); });
+
+$("btn-play").addEventListener("click", startPlay);
+$("btn-restart").addEventListener("click", startPlay);
+$("btn-skip").addEventListener("click", () => (stage.waiting ? null : advance()));
+$("btn-undo").addEventListener("click", undo);
+$("btn-redo").addEventListener("click", redo);
+$("btn-sample").addEventListener("click", () => {
+  commitNow();                    // loading over a draft is undoable — it would otherwise be
+  srcEl.value = SAMPLE;           // the one click that can destroy an afternoon's work
+  $("fid").value = "sheriff_intro";
+  noteEdit(true);
+  recompute();
+});
+/* Open / download a .txt file. Opening is one undo step, like Load example. */
+$("btn-open").addEventListener("click", () => $("file-open").click());
+$("file-open").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";            // lets the same file be opened again
+  if (!file) return;
+  const text = await file.text();
+  commitNow();
+  srcEl.value = text.replace(/\r\n?/g, "\n");
+  $("fid").value = file.name.replace(/\.txt$/i, "");
+  noteEdit(true);
+  recompute();
+  toast(`Opened ${file.name}. Ctrl+Z undoes it.`);
+});
+$("btn-download").addEventListener("click", () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([srcEl.value], { type: "text/plain" }));
+  a.download = ($("fid").value.trim() || "conversation") + ".txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$("btn-addcast").addEventListener("click", () => {
+  cast.push({ key: "NEW_SPEAKER", side: "Left", colour: "#cccccc" });
+  save(); renderCast(); recompute();
+});
+$("btn-copy").addEventListener("click", async () => {
+  refreshExport();
+  const box = $("exportbox");
+  box.select();
+  let ok = false;
+  try { await navigator.clipboard.writeText(box.value); ok = true; }
+  catch (e) { try { ok = document.execCommand("copy"); } catch (e2) { ok = false; } }
+  toast(ok ? "Copied — save it as " + ($("fid").value.trim() || "conversation") + ".txt"
+           : "Press Ctrl+C to copy the selected text");
+});
+
+document.addEventListener("keydown", (e) => {
+  // Undo works from anywhere — a writer who just clicked a swatch is not focused on the
+  // textarea and still expects Ctrl+Z to take back their last edit. The textarea has its own
+  // handler, so skip it here to avoid running twice.
+  if (modalEl.classList.contains("open")) {
+    if (e.key === "Escape") modalEl.classList.remove("open");
+    return;
+  }
+  if (e.target !== srcEl && historyKeys(e)) return;
+  if (e.target === srcEl || e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") return;
+  if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); stage.playing ? advance() : startPlay(); }
+});
+
+/* Import dialog: converts as you paste, and only replaces the script on request. */
+const modalEl = $("import-modal");
+const importInput = $("import-input");
+const importOutput = $("import-output");
+const IMPORT_DELAY_MS = 150;
+let importTimer = null;
+let importResult = { text: "", notes: [] };
+
+function renderImportPreview() {
+  importResult = convertScript(importInput.value);
+  importOutput.value = importResult.text;
+  $("btn-import-submit").disabled = !importResult.text;
+
+  const n = importResult.notes.length;
+  $("import-summary").textContent = !importResult.text ? ""
+    : n ? `${n} line${n === 1 ? "" : "s"} to check. Click one to find it in the pasted text.`
+        : "No guesses made. Nothing to check.";
+
+  $("import-notes").innerHTML = importResult.notes.map((w) =>
+    `<button class="issue sev-${w.sev}" data-line="${w.line}">
+       <span class="where">${w.line}</span><span>${w.msg}</span>
+     </button>`).join("");
+  $("import-notes").querySelectorAll(".issue").forEach((b) =>
+    b.addEventListener("click", () => gotoLine(+b.dataset.line, importInput)));
+}
+
+importInput.addEventListener("input", () => {
+  clearTimeout(importTimer);
+  importTimer = setTimeout(renderImportPreview, IMPORT_DELAY_MS);
+});
+
+$("btn-import-doc").addEventListener("click", () => {
+  modalEl.classList.add("open");
+  importInput.value = "";
+  renderImportPreview();
+  importInput.focus();
+});
+
+$("btn-import-cancel").addEventListener("click", () => {
+  modalEl.classList.remove("open");
+});
+
+$("btn-import-submit").addEventListener("click", () => {
+  clearTimeout(importTimer);
+  renderImportPreview();            // in case a paste is still waiting on the delay
+  if (!importResult.text) return;
+
+  commitNow();                      // one undo step brings the old script back
+  srcEl.value = importResult.text;
+  noteEdit(true);
+  recompute();
+  modalEl.classList.remove("open");
+
+  const n = importResult.notes.length;
+  toast(n ? `Script replaced. ${n} line${n === 1 ? "" : "s"} to check; Ctrl+Z undoes it.`
+          : "Script replaced. Ctrl+Z undoes it.");
+});
+
+let toastTimer;
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg; t.classList.add("up");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("up"), 2600);
+}
+
+if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) effectsOn = false;
+
+if (!load()) srcEl.value = SAMPLE;
+committed = snapshot();          // the baseline every undo eventually walks back to
+refreshHistoryButtons();
+renderCast();
+renderColour();
+recompute();
+requestAnimationFrame(frame);
+</script>
+

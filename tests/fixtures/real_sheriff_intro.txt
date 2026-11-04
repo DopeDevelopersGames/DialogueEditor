@@ -1,0 +1,52 @@
+// Resources/Dialogue/sheriff_intro.txt
+//
+// The first meeting. Sets `met_sheriff`, which a rematch file can read.
+//
+// Doubles as the format's worked example. A two-hander on purpose: SHERIFF holds the right side and
+// {PLAYER} the left, so both portraits are exercised and the dimming reads. Every piece of the
+// grammar appears at least once — TMP colour, all four motion effects, both timing cues, a tag gate,
+// a negated gate, a timer with a fallback, fallthrough, and an explicit END.
+//
+// Note this file names SHERIFF rather than using {ENEMY}. That is the choice between a scene written
+// for one specific opponent and one reusable across several — see the catalogue notes. Don't use
+// both for the same character: they are two speakers as far as the portrait staging is concerned,
+// and they would fight over the same side.
+
+# opening
+SHERIFF: You picked the <color=#c81e1e>wrong town</color>, stranger.
+{PLAYER}: I've heard that one before.
+SHERIFF: Ten paces.[pause=0.4] [shake]You know how this goes.[/shake]
+
+# threat
+@timer 4 -> back_down
+SHERIFF: Well?[pause=0.5] Say something.
+> "Just passing through."                 -> passing
+> "You talk a lot for a dead man."        -> insult
+> [met_sheriff] "We've met before."       -> callback
+> [!cocky] Say nothing.                   -> back_down
+
+# insult
+@tag cocky
+@perk Scattershot
+{PLAYER}: You talk a lot for a dead man.
+SHERIFF: [wobble=1.4]...Ten paces. Now.[/wobble]
+-> END
+
+# passing
+@tag polite
+@tag met_sheriff
+{PLAYER}: Just passing through.
+SHERIFF: Nobody's just passing. Not here.
+SHERIFF: [speed=0.6]Not any more.[/speed]
+-> END
+
+# callback
+@tag met_sheriff
+{PLAYER}: We've met before.
+SHERIFF: [wave]So we have.[/wave] Didn't finish it then either.
+-> END
+
+# back_down
+@tag met_sheriff
+SHERIFF: [jump]Thought so.[/jump]
+// No jump: the last node simply ends the conversation.
