@@ -203,6 +203,44 @@ button:disabled:hover { background: var(--surface2); border-color: var(--line); 
   font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
   color: var(--faint); font-weight: 700; white-space: nowrap;
 }
+.toolbar button[data-tmp] { min-width: 28px; font-family: Georgia, "Times New Roman", serif; font-size: 13px; }
+
+/* ------------------------------------------------------------------ pause panel */
+.popwrap { position: relative; }
+.poppanel {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+  width: 292px; padding: 11px 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.poppanel[hidden] { display: none; }
+.poppanel .pophead {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--faint); font-weight: 700; margin: 0 0 6px;
+}
+.poppanel .pophead + .pausegrid { margin-bottom: 11px; }
+.pausegrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.toolbar .pausegrid button {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0;
+  padding: 5px 8px; font-size: 11.5px; font-weight: 500; color: var(--muted);
+}
+.pausegrid button b {
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px; font-weight: 600; color: var(--ink);
+}
+.pausegrid .none { grid-column: 1 / -1; font-size: 12px; color: var(--faint); font-style: italic; }
+.pmine { display: flex; }
+.toolbar .pmine button:first-child { flex: 1 1 auto; border-radius: var(--radius) 0 0 var(--radius); }
+.toolbar .pmine button:last-child {
+  flex: 0 0 auto; padding: 0 6px; border-left: 0; font-size: 10px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.pausecustom { display: flex; align-items: center; gap: 5px; }
+#pausesecs {
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px; padding: 4px 6px; width: 70px;
+  background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius);
+}
+#pausesecs.bad { border-color: var(--err); color: var(--err); }
+.pausecustom .ext { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--faint); margin-right: auto; }
 
 /* ------------------------------------------------------------------ editor */
 .editorwrap { position: relative; flex: 1 1 auto; min-height: 0; display: flex; overflow: hidden; }
@@ -537,6 +575,7 @@ button:disabled:hover { background: var(--surface2); border-color: var(--line); 
     <input id="file-open" type="file" accept=".txt,text/plain" hidden>
     <button id="btn-import-doc" class="ghost">Import Google Doc</button>
     <button id="btn-sample" class="ghost">Load example</button>
+    <button id="btn-play-line" title="Play from the line the cursor is on (Ctrl+Enter)">Play from line</button>
     <button id="btn-play" class="primary">Play scene</button>
   </header>
 
@@ -564,8 +603,27 @@ button:disabled:hover { background: var(--surface2); border-color: var(--line); 
         </div>
         <div class="group">
           <span class="grouplabel">Timing</span>
-          <button data-snip="pause">pause</button>
+          <div class="popwrap" id="pausewrap">
+            <button id="btn-pause" aria-haspopup="true" aria-expanded="false" aria-controls="pausepanel">pause ▾</button>
+            <div class="poppanel" id="pausepanel" hidden>
+              <div class="pophead">Presets</div>
+              <div class="pausegrid" id="pausepresets"></div>
+              <div class="pophead">Yours</div>
+              <div class="pausegrid" id="pausemine"></div>
+              <div class="pausecustom">
+                <input type="number" id="pausesecs" min="0.05" step="0.05" value="0.4" aria-label="Pause length in seconds">
+                <span class="ext">s</span>
+                <button id="btn-pause-insert" class="primary">Insert</button>
+                <button id="btn-pause-save">Save</button>
+              </div>
+            </div>
+          </div>
           <button data-wrap="speed">speed</button>
+        </div>
+        <div class="group">
+          <span class="grouplabel">Format</span>
+          <button data-tmp="b" title="Bold (Ctrl+B)" aria-label="Bold"><b>B</b></button>
+          <button data-tmp="i" title="Italic (Ctrl+I)" aria-label="Italic"><i>I</i></button>
         </div>
         <div class="group">
           <span class="grouplabel">Colour</span>
@@ -729,7 +787,7 @@ button:disabled:hover { background: var(--surface2); border-color: var(--line); 
 // Pure logic (parser, validator, converter) lives in dialogue-core.js.
 const {
   SEEN_PREFIX, isEffectTag, speakerColon,
-  parseConversation, validate,
+  parseConversation, validate, locateLine,
   convertScript, esc
 } = DialogueCore;
 
@@ -1085,7 +1143,8 @@ $("btn-colcopy").addEventListener("click", async () => {
 const stage = {
   playing: false, node: 0, line: 0, revealed: 0, acc: 0,
   pauseLeft: 0, pauseAt: 0, tags: new Set(), waiting: false,
-  timeLeft: 0, timeTotal: 0, cur: null, last: 0, sides: { Left: null, Right: null }
+  timeLeft: 0, timeTotal: 0, cur: null, last: 0, sides: { Left: null, Right: null },
+  from: null      // where Restart goes back to: null for the top, else a locateLine result
 };
 
 const sideOf = (who) => {
@@ -1098,26 +1157,40 @@ const colourOf = (who) => {
   return e ? e.colour : null;
 };
 
-function startPlay() {
+function startPlay(from) {
   if (!conv || !conv.nodes.length) return;
+  // A stale start point (the script changed under it) falls back to the top.
+  if (from && !conv.nodes[from.node]) from = null;
   Object.assign(stage, {
     playing: true, node: 0, line: 0, revealed: 0, acc: 0, pauseLeft: 0, pauseAt: 0,
     tags: new Set(), waiting: false, timeLeft: 0, timeTotal: 0, cur: null,
-    sides: { Left: null, Right: null }, last: performance.now()
+    sides: { Left: null, Right: null }, last: performance.now(), from: from || null
   });
   $("pt-left").className = "portrait absent"; $("pt-left-name").textContent = "—";
   $("pt-right").className = "portrait absent"; $("pt-right-name").textContent = "—";
-  enterNode(0, 0);
+  if (!from) return enterNode(0, 0);
+  enterNode(from.node, 0, from.line);
+  if (from.atChoices) revealAll();     // started on a choice: show the options straight away
 }
 
-function enterNode(i, hops) {
+// Starts at the line holding the cursor. Tags set by earlier nodes are not replayed.
+function playFromCursor() {
+  if (!conv || !conv.nodes.length) return;
+  const n = srcEl.value.slice(0, srcEl.selectionStart).split("\n").length;
+  const from = locateLine(conv, n);
+  startPlay(from);
+  const nd = conv.nodes[from.node];
+  toast(`Playing from line ${n} (${nd.label ? "# " + nd.label : "opening"}). Earlier tags are not set.`);
+}
+
+function enterNode(i, hops, at) {
   const nd = conv.nodes[i];
   if (!nd || hops > conv.nodes.length + 1) return finish();
-  stage.node = i; stage.line = 0;
+  stage.node = i; stage.line = Math.min(at || 0, Math.max(0, nd.lines.length - 1));
   nd.tags.forEach((t) => stage.tags.add(t));
   nd.untags.forEach((t) => stage.tags.delete(t));
   paintTags();
-  if (nd.lines.length) return showLine(nd.lines[0]);
+  if (nd.lines.length) return showLine(nd.lines[stage.line]);
   afterLines(nd, hops);
 }
 
@@ -1455,11 +1528,31 @@ function wrapSelection(open, close) {
   recompute();
 }
 
+// Bold and italic toggle: on text already wrapped (tags inside or just outside the
+// selection) the tags come off; otherwise the selection is wrapped.
+function toggleWrap(open, close) {
+  const v = srcEl.value, s = srcEl.selectionStart, e = srcEl.selectionEnd;
+  const sel = v.slice(s, e);
+  let from = -1, to = -1, inner = "";
+  if (sel.length >= open.length + close.length && sel.startsWith(open) && sel.endsWith(close)) {
+    from = s; to = e; inner = sel.slice(open.length, sel.length - close.length);
+  } else if (v.slice(s - open.length, s) === open && v.slice(e, e + close.length) === close) {
+    from = s - open.length; to = e + close.length; inner = sel;
+  }
+  if (from < 0) return wrapSelection(open, close);
+
+  commitNow();
+  srcEl.value = v.slice(0, from) + inner + v.slice(to);
+  srcEl.setSelectionRange(from, from + inner.length);
+  srcEl.focus();
+  noteEdit(true);
+  recompute();
+}
+
 const SNIPPETS = {
   node:   () => insertAt("\n# new_node\n", 1),
   line:   () => insertAt("\nSPEAKER: \n", 1),
   choice: () => insertAt("\n> option text -> target\n", 1),
-  pause:  () => insertAt("[pause=0.4]"),
   tag:    () => insertAt("\n@tag name\n", 1),
   perk:   () => insertAt("\n@perk Scattershot\n", 1),
   grant:  () => insertAt("\n@grant Upgrade Name\n", 1),
@@ -1475,6 +1568,79 @@ document.querySelectorAll("[data-wrap]").forEach((b) =>
     else if (k === "speed") wrapSelection("[speed=0.6]", "[/speed]");
     else wrapSelection(`[${k}]`, `[/${k}]`);
   }));
+document.querySelectorAll("[data-tmp]").forEach((b) =>
+  b.addEventListener("click", () => toggleWrap(`<${b.dataset.tmp}>`, `</${b.dataset.tmp}>`)));
+
+/* ------------------------------------------------------------ pause panel
+   The pause button opens a panel of lengths. Built-in presets are fixed; the writer's
+   own are saved with the draft. */
+const PAUSE_PRESETS = [
+  [0.15, "Comma"], [0.4, "Beat"], [0.6, "Breath"],
+  [0.9, "Hesitate"], [1.4, "Long"], [2.5, "Stare-down"]
+];
+const PAUSE_SAVED_MAX = 9;
+let pausePresets = [];     // the writer's own, in seconds, sorted
+
+const pausePanel = $("pausepanel");
+const fmtSecs = (s) => String(Math.round(s * 100) / 100);
+
+function renderPausePanel() {
+  $("pausepresets").innerHTML = PAUSE_PRESETS.map(([s, name]) =>
+    `<button data-secs="${s}" title="Insert [pause=${fmtSecs(s)}]"><b>${fmtSecs(s)}s</b>${name}</button>`).join("");
+  $("pausemine").innerHTML = pausePresets.length
+    ? pausePresets.map((s) =>
+        `<span class="pmine"><button data-secs="${s}" title="Insert [pause=${fmtSecs(s)}]"><b>${fmtSecs(s)}s</b>saved</button>` +
+        `<button data-unsave="${s}" title="Remove this preset" aria-label="Remove ${fmtSecs(s)}s preset">✕</button></span>`).join("")
+    : '<span class="none">Type a length below and press Save.</span>';
+
+  pausePanel.querySelectorAll("[data-secs]").forEach((b) =>
+    b.addEventListener("click", () => insertPause(+b.dataset.secs)));
+  pausePanel.querySelectorAll("[data-unsave]").forEach((b) =>
+    b.addEventListener("click", () => {
+      pausePresets = pausePresets.filter((s) => s !== +b.dataset.unsave);
+      renderPausePanel(); save();
+    }));
+}
+
+function togglePausePanel(open) {
+  pausePanel.hidden = !open;
+  $("btn-pause").setAttribute("aria-expanded", String(open));
+}
+
+function insertPause(secs) {
+  togglePausePanel(false);
+  insertAt(`[pause=${fmtSecs(secs)}]`);
+}
+
+// The length typed in the panel, or null (and the box marked) if it isn't one.
+function customSecs() {
+  const box = $("pausesecs");
+  const s = Math.round(parseFloat(box.value) * 100) / 100;
+  const ok = s > 0;
+  box.classList.toggle("bad", !ok);
+  if (!ok) toast("A pause needs a length above 0 seconds.");
+  return ok ? s : null;
+}
+
+$("btn-pause").addEventListener("click", () => togglePausePanel(pausePanel.hidden));
+$("btn-pause-insert").addEventListener("click", () => {
+  const s = customSecs();
+  if (s !== null) insertPause(s);
+});
+$("btn-pause-save").addEventListener("click", () => {
+  const s = customSecs();
+  if (s === null) return;
+  if (PAUSE_PRESETS.some(([p]) => p === s) || pausePresets.includes(s)) return toast(`${fmtSecs(s)}s is already a preset.`);
+  pausePresets = pausePresets.concat(s).sort((a, b) => a - b).slice(0, PAUSE_SAVED_MAX);
+  renderPausePanel(); save();
+});
+$("pausesecs").addEventListener("input", (e) => e.target.classList.remove("bad"));
+$("pausesecs").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); $("btn-pause-insert").click(); }
+});
+document.addEventListener("mousedown", (e) => {
+  if (!pausePanel.hidden && !$("pausewrap").contains(e.target)) togglePausePanel(false);
+});
 
 /* ------------------------------------------------------------ tabs */
 document.querySelectorAll(".tab").forEach((t) =>
@@ -1495,7 +1661,7 @@ const KEY = "tenpaces.dialogue.desk.v1";
 function save() {
   try {
     localStorage.setItem(KEY, JSON.stringify({
-      src: srcEl.value, cast, id: $("fid").value, colour, recents
+      src: srcEl.value, cast, id: $("fid").value, colour, recents, pauses: pausePresets
     }));
   } catch (e) { /* private window, blocked storage — drafts just don't persist */ }
 }
@@ -1509,6 +1675,7 @@ function load() {
     if (d.id) $("fid").value = d.id;
     if (hexOk(d.colour || "")) colour = d.colour.toLowerCase();
     if (Array.isArray(d.recents)) recents = d.recents.filter(hexOk);
+    if (Array.isArray(d.pauses)) pausePresets = d.pauses.filter((s) => typeof s === "number" && s > 0);
     return !!d.src;
   } catch (e) { return false; }
 }
@@ -1530,12 +1697,18 @@ srcEl.addEventListener("scroll", () => {
 srcEl.addEventListener("keydown", (e) => {
   if (historyKeys(e)) return;     // ours runs; the native stack is suppressed
   if (e.key === "Tab") { e.preventDefault(); insertAt("    "); }
+  if (e.ctrlKey || e.metaKey) {
+    const k = e.key.toLowerCase();
+    if (k === "b" || k === "i") { e.preventDefault(); toggleWrap(`<${k}>`, `</${k}>`); }
+    else if (k === "enter") { e.preventDefault(); playFromCursor(); }
+  }
 });
 srcEl.addEventListener("blur", () => commitNow());   // never leave a burst uncommitted
 $("fid").addEventListener("input", () => { refreshExport(); save(); });
 
-$("btn-play").addEventListener("click", startPlay);
-$("btn-restart").addEventListener("click", startPlay);
+$("btn-play").addEventListener("click", () => startPlay());
+$("btn-play-line").addEventListener("click", playFromCursor);
+$("btn-restart").addEventListener("click", () => startPlay(stage.from));
 $("btn-skip").addEventListener("click", () => (stage.waiting ? null : advance()));
 $("btn-undo").addEventListener("click", undo);
 $("btn-redo").addEventListener("click", redo);
@@ -1586,6 +1759,7 @@ document.addEventListener("keydown", (e) => {
   // Undo works from anywhere — a writer who just clicked a swatch is not focused on the
   // textarea and still expects Ctrl+Z to take back their last edit. The textarea has its own
   // handler, so skip it here to avoid running twice.
+  if (e.key === "Escape" && !pausePanel.hidden) { togglePausePanel(false); return; }
   if (modalEl.classList.contains("open")) {
     if (e.key === "Escape") modalEl.classList.remove("open");
     return;
@@ -1668,6 +1842,7 @@ committed = snapshot();          // the baseline every undo eventually walks bac
 refreshHistoryButtons();
 renderCast();
 renderColour();
+renderPausePanel();
 recompute();
 requestAnimationFrame(frame);
 </script>

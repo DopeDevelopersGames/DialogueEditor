@@ -284,6 +284,21 @@
     return { nodes, byLabel, warns };
   }
 
+  /* Where a preview should start for source line n: the node holding it, and the first
+     dialogue line at or after it. On a choice (or past the last line) the node's last line. */
+  function locateLine(conv, n) {
+    const { nodes } = conv;
+    if (!nodes.length) return null;
+    let node = 0;
+    nodes.forEach((nd, i) => { if (nd.line <= n) node = i; });
+    const nd = nodes[node];
+    const onChoice = nd.choices.some((c) => c.line === n);
+    let line = onChoice ? -1 : nd.lines.findIndex((l) => l.line >= n);
+    const past = line < 0;
+    if (past) line = Math.max(0, nd.lines.length - 1);
+    return { node, line, atChoices: past && nd.choices.length > 0 };
+  }
+
   /* ==================================================================
      CHECKS — the cross-cutting ones the line parser cannot see
      ================================================================== */
@@ -634,7 +649,7 @@
     FX, TIMING, KNOWN_FX, PERKS, SEEN_PREFIX,
     // parsing and validation
     splitTag, isKnownTag, isEffectTag, parseEffects, speakerColon,
-    parseConversation, validate,
+    parseConversation, validate, locateLine,
     // conversion
     convertScript, translateGoogleDocToUnityScript,
     // helpers
